@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Runtime artifacts written by the bridge into approved projects
+.codex-bridge/
+
+# Secrets / credentials — never commit these
+.env
+.env.*
+*.key
+*.pem
+*.p12
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test fixtures (created in the system temp dir by the test suite)
+bridge-test/
+
+# macOS
+.DS_Store
+
+# Local docs / notes
+docs/
+
+# Editor / IDE
+.idea/
+.vscode/

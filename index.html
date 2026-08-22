@@ -1,0 +1,981 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cheap Labor — ChatGPT thinks. Codex executes. They bill separately.</title>
+<meta name="description" content="An open-source MCP bridge that splits agentic coding: ChatGPT plans, edits, and reviews on its own allowance while Codex spends its pool only on real implementation — over your local repo, from a single @cheap-labor trigger.">
+<link rel="icon" href="assets/cheap-labor-icon-128px.png">
+<meta property="og:title" content="Cheap Labor">
+<meta property="og:description" content="ChatGPT thinks. Codex executes. They bill separately.">
+<meta property="og:image" content="assets/cheap-labor-icon-1024px.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+   --bg:#191817;
+   --bg-2:#201e1b;
+   --surface:#27241f;
+   --surface-2:#302c25;
+   --line:#3c3831;
+   --line-strong:#514b41;
+  --text:#f3ede0;
+  --text-2:#c8c1b1;
+  --text-3:#97917f;
+  --gold:#fdc405;
+  --gold-2:#d9ad08;
+  --bronze:#94750c;
+  --term-bg:#0e0d0b;
+  --gold-ink:#1a1404;
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--s8:64px;--s9:96px;
+  --r-sm:10px;--r-md:14px;--r-lg:18px;
+  --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-body:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace;
+  --shadow-1:0 1px 0 rgba(0,0,0,.25),0 10px 30px rgba(0,0,0,.35);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+.skip-link{position:absolute;left:-999px;top:var(--s2);z-index:100;background:var(--gold);color:var(--gold-ink);padding:10px 16px;border-radius:999px;font-weight:600;text-decoration:none}
+.skip-link:focus{left:var(--s4)}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+a{color:inherit}
+img{max-width:100%;display:block}
+code{font-family:var(--font-mono);font-size:.88em;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;color:var(--text)}
+h1,h2,h3{font-family:var(--font-display);line-height:1.08;margin:0;letter-spacing:-.01em}
+p{margin:0}
+.container{max-width:1120px;margin:0 auto;padding:0 var(--s5)}
+.section{padding:var(--s8) 0 var(--s8)}
+.section-alt{background:var(--bg-2)}
+.section-label{font-family:var(--font-display);font-weight:600;font-size:.95rem;color:var(--gold);text-transform:uppercase;letter-spacing:.14em;margin-bottom:var(--s3)}
+.section-head{max-width:640px;margin-bottom:var(--s7)}
+.section-head h2{font-size:clamp(1.75rem,3.6vw,2.5rem);font-weight:600}
+.section-head p{margin-top:var(--s4);color:var(--text-2);font-size:1.0625rem;max-width:56ch}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:6px}
+::selection{background:var(--gold);color:var(--gold-ink)}
+
+.site-header{
+  position:sticky;top:0;z-index:50;
+   background:rgba(25,24,23,.92);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.site-header .container{display:flex;align-items:center;gap:var(--s5);height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:600;font-size:1.05rem;text-decoration:none;color:var(--text)}
+.brand img{width:28px;height:28px}
+.nav{display:flex;gap:var(--s6);margin-left:var(--s4)}
+.nav a{text-decoration:none;color:var(--text-2);font-size:.95rem;font-weight:500}
+.nav a:hover{color:var(--text)}
+.nav a.active{color:var(--gold)}
+.header-cta{margin-left:auto}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  padding:11px 22px;border-radius:999px;font-family:var(--font-body);
+  font-size:.95rem;font-weight:600;text-decoration:none;cursor:pointer;border:1px solid transparent;
+  transition:transform .15s ease,border-color .15s ease,background-color .15s ease,color .15s ease;
+  min-height:44px;
+}
+.btn svg{width:17px;height:17px;flex:none}
+.btn:active{transform:scale(.98)}
+.btn-gold{background:var(--gold);color:var(--gold-ink)}
+.btn-gold:hover{background:#ffd633}
+.btn-ghost{border-color:var(--line-strong);color:var(--text);background:transparent}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+.link-arrow{color:var(--text-2);text-decoration:none;font-weight:500;font-size:.95rem}
+.link-arrow:hover{color:var(--gold)}
+
+.hero{position:relative;overflow:hidden;padding:var(--s9) 0 var(--s8);text-align:center}
+.hero::before{
+  content:"";position:absolute;pointer-events:none;
+  width:clamp(360px,42vw,600px);height:clamp(360px,42vw,600px);
+  top:-350px;right:-180px;
+  border:1px solid rgba(253,196,5,.16);
+  border-radius:42% 58% 55% 45% / 55% 45% 55% 45%;
+  transform:rotate(14deg);
+}
+.hero::after{
+  content:"";position:absolute;pointer-events:none;
+  width:190px;height:190px;left:-75px;bottom:-105px;
+  background:rgba(253,196,5,.035);
+  border:1px solid rgba(253,196,5,.10);
+  border-radius:58% 42% 46% 54% / 48% 56% 44% 52%;
+  transform:rotate(-20deg);
+}
+.hero .container{position:relative;z-index:1}
+.hero-tagline{font-family:var(--font-display);font-weight:700;font-size:clamp(2.4rem,6.4vw,4.4rem);line-height:1.04;letter-spacing:-.02em}
+.hero-tagline .line{display:block}
+.hero-tagline .gold{color:var(--gold)}
+.hero-sub{margin:var(--s5) auto 0;max-width:640px;color:var(--text-2);font-size:1.125rem}
+.hero-actions{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:var(--s4);margin-top:var(--s6)}
+.term{
+  background:var(--term-bg);
+  border:1px solid var(--line-strong);
+  border-radius:var(--r-lg);
+  box-shadow:var(--shadow-1);
+  text-align:left;
+}
+.term-bar{
+  display:flex;align-items:center;gap:var(--s2);padding:12px 16px;
+  border-bottom:1px solid var(--line);
+  background:var(--surface);
+  border-radius:var(--r-lg) var(--r-lg) 0 0;
+}
+.term-dot{width:11px;height:11px;border-radius:50%}
+.term-dot:nth-child(1){background:#d95549}
+.term-dot:nth-child(2){background:#d9ad08}
+.term-dot:nth-child(3){background:#4d9e68}
+.term-title{margin-left:var(--s2);font-family:var(--font-mono);font-size:.78rem;color:var(--text-3)}
+.term-body{padding:var(--s5) var(--s5) var(--s6);font-family:var(--font-mono);font-size:.9rem;line-height:1.75;white-space:pre-wrap;word-break:break-word;color:var(--text-2)}
+.term-body .prompt{color:var(--gold)}
+.term-body .ok{color:#7fc08a}
+.term-body .dim{color:var(--text-3)}
+.chat{
+  background:var(--term-bg);border:1px solid var(--line-strong);border-radius:var(--r-lg);
+  box-shadow:var(--shadow-1);text-align:left;overflow:hidden;display:flex;flex-direction:column;
+}
+.chat-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface)}
+.chat-dot{width:11px;height:11px;border-radius:50%;background:var(--gold);flex:none}
+.chat-title{font-family:var(--font-display);font-weight:600;font-size:.9rem}
+.chat-sub{font-family:var(--font-mono);font-size:.72rem;color:var(--text-3);margin-left:auto}
+.chat-body{flex:1;overflow:hidden;padding:var(--s5) var(--s5) var(--s5);display:flex;flex-direction:column;gap:var(--s4)}
+.chat-input{
+  display:flex;align-items:center;gap:10px;margin:0 var(--s5) var(--s5);
+  border:1px solid var(--line-strong);border-radius:999px;padding:11px 12px 11px 16px;background:var(--surface);
+}
+.chat-input .input{flex:1;min-width:0;background:transparent;border:0;outline:0;font-size:.88rem;color:var(--text);font-family:var(--font-body)}
+.chat-input .input::placeholder{color:var(--text-3)}
+.chat-input.done .cursor{display:none}
+.chat-input .cursor{display:inline-block;width:8px;height:1.05em;background:var(--gold);vertical-align:text-bottom;margin-left:2px;animation:blink 1.1s steps(2,start) infinite}
+.chat-send.sending{animation:sendPulse .3s ease}
+@keyframes sendPulse{0%{transform:scale(1)}40%{transform:scale(.82)}100%{transform:scale(1)}}
+.chat-cta{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 var(--s5) var(--s5);border-radius:999px;padding:11px 16px;background:var(--gold);color:var(--gold-ink);font-weight:600;text-decoration:none;min-height:44px;animation:itemIn .3s ease both}
+.chat-cta:hover{background:#ffd633}
+.chat-cta svg{width:17px;height:17px;flex:none}
+.chat-send{width:28px;height:28px;border-radius:50%;background:var(--gold);color:var(--gold-ink);display:flex;align-items:center;justify-content:center;margin-left:auto;flex:none;border:0;padding:0;cursor:pointer;transition:background-color .15s ease}
+.chat-send:hover{background:#ffd633}
+.chat-send svg{width:14px;height:14px}
+.msg{font-size:.92rem;line-height:1.6;word-break:break-word}
+.msg-user{max-width:80%;align-self:flex-end;background:var(--surface-2);border:1px solid var(--line);color:var(--text);padding:10px 14px;border-radius:14px 14px 4px 14px}
+.msg-gpt{display:flex;gap:10px;align-items:flex-start;max-width:100%}
+.msg-avatar{width:26px;height:26px;border-radius:50%;flex:none;margin-top:3px;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--line)}
+.msg-avatar svg{width:15px;height:15px;color:#10a37f}
+.msg-bubble .inline-logo{display:inline-block;width:16px;height:16px;border-radius:4px;vertical-align:-3px;margin:0 2px;border:1px solid var(--line)}
+.msg-bubble{background:#16140f;border:1px solid var(--line);border-radius:4px 14px 14px 14px;padding:10px 14px;font-size:.92rem;line-height:1.6;color:var(--text-2)}
+.msg-bubble .ok{color:#7fc08a}
+.msg-bubble .dim{color:var(--text-3)}
+.msg-bubble .tool-row{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s3)}
+.msg-in{animation:msgIn .4s ease both}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}}
+.msg-leave{animation:msgOut .3s ease both}
+@keyframes msgOut{to{opacity:0;transform:translateY(-24px)}}
+.thinking{display:inline-flex;gap:5px;align-items:center;padding:2px 0}
+.thinking i{width:6px;height:6px;border-radius:50%;background:var(--text-3);animation:tdot 1.1s ease-in-out infinite}
+.thinking i:nth-child(2){animation-delay:.15s}
+.thinking i:nth-child(3){animation-delay:.3s}
+@keyframes tdot{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+.hero-demo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--s5);align-items:stretch;max-width:980px;margin:var(--s8) auto 0;text-align:left}
+.hero-demo .chat,.hero-demo .code-panel{height:560px}
+.code-panel{
+  background:var(--term-bg);border:1px solid var(--line-strong);border-radius:var(--r-lg);
+  box-shadow:var(--shadow-1);overflow:hidden;display:flex;flex-direction:column;
+}
+.code-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface)}
+.code-head .chat-dot:nth-child(1){background:#d95549}
+.code-head .chat-dot:nth-child(2){background:#d9ad08}
+.code-head .chat-dot:nth-child(3){background:#4d9e68}
+.code-path{font-family:var(--font-mono);font-size:.8rem;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.code-status{margin-left:auto;flex:none;font-family:var(--font-mono);font-size:.72rem;color:#7fc08a;border:1px solid rgba(127,192,138,.35);padding:2px 8px;border-radius:999px}
+.panel-body{flex:1;min-height:0;overflow:hidden;position:relative}
+.explorer{padding:var(--s3);display:flex;flex-direction:column;gap:var(--s1)}
+.explorer-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-family:var(--font-mono);font-size:.88rem;color:var(--text-2);animation:itemIn .3s ease both}
+.explorer-item:hover{background:var(--surface-2)}
+.explorer-item svg{width:18px;height:18px;flex:none}
+.explorer-folder svg{color:#d9ad08}
+.explorer-file svg{color:#8aa8c9}
+@keyframes itemIn{from{opacity:0;transform:translateY(6px)}}
+.editor{animation:editorIn .45s ease both}
+@keyframes editorIn{from{opacity:0;transform:translateY(10px) scale(.99)}}
+.editor-tabs{border-bottom:1px solid var(--line);background:var(--surface)}
+.editor-tab{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;font-family:var(--font-mono);font-size:.78rem;color:var(--text);border-bottom:2px solid var(--gold);background:var(--term-bg)}
+.editor-tab svg{width:14px;height:14px;color:#8aa8c9}
+.editor-body{margin:0;padding:var(--s5);font-family:var(--font-mono);font-size:.9rem;line-height:1.7;color:var(--text-2)}
+.editor .cl{animation:lineIn .35s ease both}
+.editor .cl:nth-child(1){animation-delay:.12s}
+.editor .cl:nth-child(2){animation-delay:.2s}
+.editor .cl:nth-child(3){animation-delay:.28s}
+.editor .cl:nth-child(4){animation-delay:.36s}
+.editor .cl:nth-child(5){animation-delay:.44s}
+.editor .cl:nth-child(6){animation-delay:.52s}
+.editor .cl:nth-child(7){animation-delay:.6s}
+.editor .cl:nth-child(8){animation-delay:.68s}
+@keyframes lineIn{from{opacity:0;transform:translateY(4px)}}
+.editor .kw{color:var(--gold)}
+.editor .inc{color:#8aa8c9}
+.editor .fn{color:var(--text)}
+.editor .str{color:#9fce8a}
+.editor .num{color:#d9ad08}
+.folder-chevron{width:14px;height:14px;flex:none;color:var(--text-3);transition:transform .2s ease}
+.phase-empty .folder-chevron,.phase-files .folder-chevron{transform:rotate(90deg)}
+.folder-children{margin-left:26px;padding-left:16px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:var(--s1)}
+.explorer-file.clicking{animation:fileClick 1s ease}
+@keyframes fileClick{
+  0%,100%{background:transparent}
+  18%{background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--gold)}
+  38%{background:transparent}
+  58%{background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--gold)}
+  78%{background:transparent}
+}
+.phase-desktop .folder-children,.phase-desktop .editor{display:none}
+.phase-empty .explorer-file,.phase-empty .editor{display:none}
+.phase-files .editor{display:none}
+.phase-open .explorer{display:none}
+@keyframes blink{50%{opacity:0}}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:var(--s5)}
+.panel{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:var(--s6);display:flex;flex-direction:column;gap:var(--s4);
+}
+.panel-tag{font-family:var(--font-mono);font-size:.8rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em}
+.panel h3{font-size:1.35rem;font-weight:600}
+.panel p{color:var(--text-2);font-size:.98rem}
+.tool-list{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:auto}
+.tool-chip{
+  font-family:var(--font-mono);font-size:.8rem;color:var(--text);
+  background:var(--surface-2);border:1px solid var(--line);
+  padding:6px 12px;border-radius:999px;
+}
+.tool-chip .free{color:var(--gold)}
+.tool-chip .paid{color:#c99f2a}
+
+.wf{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:var(--s8);align-items:start}
+.wf-visual{position:sticky;top:88px}
+.wf-visual .chat{height:clamp(400px,42vw,460px)}
+.wf-visual .chat-body{min-height:0;padding:0;display:block}
+.wf-visual .shots{position:relative;display:block;min-height:0}
+.wf-visual .shot,.wf-visual .shot.is-active{position:absolute;inset:var(--s5);display:flex;flex-direction:column;gap:var(--s4);overflow-y:auto}
+.wf-step{
+  padding:var(--s5) 0;border-top:1px solid var(--line);
+  cursor:default;
+}
+.wf-step:last-child{border-bottom:1px solid var(--line)}
+.wf-step-head{display:flex;align-items:baseline;gap:var(--s4)}
+.wf-num{font-family:var(--font-display);font-weight:700;font-size:1.05rem;color:var(--bronze);width:28px;flex:none;transition:color .2s ease}
+.wf-step h3{font-size:1.15rem;font-weight:600}
+.wf-step p{margin-top:var(--s2);color:var(--text-2);font-size:.95rem;max-width:56ch}
+.wf-step.is-active .wf-num{color:var(--gold)}
+.wf-step.is-active h3{color:var(--gold)}
+.wf-step:not(.is-active) p{opacity:.75}
+#workflow{scroll-margin-top:76px}
+.shots{position:relative}
+.shot{position:absolute;inset:0;opacity:0;transform:translateY(8px);transition:opacity .22s ease,transform .22s ease;pointer-events:none}
+.shot.is-active{position:relative;opacity:1;transform:none}
+
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s5)}
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:var(--s5);display:flex;flex-direction:column;gap:var(--s3);
+  transition:border-color .15s ease,transform .15s ease;
+}
+.card:hover{border-color:var(--line-strong);transform:translateY(-2px)}
+.card-icon{
+  width:42px;height:42px;border-radius:var(--r-sm);
+  background:var(--surface-2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;color:var(--gold);
+}
+.card-icon svg{width:22px;height:22px}
+.card h3{font-size:1.05rem;font-weight:600}
+.card p{color:var(--text-2);font-size:.92rem}
+.approval-demo{
+  margin-top:var(--s7);display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1fr);
+  gap:var(--s7);align-items:center;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r-lg);padding:var(--s6);
+}
+.approval-copy{max-width:40ch}
+.approval-copy h3{font-size:1.45rem;font-weight:600}
+.approval-copy p:not(.panel-tag){margin-top:var(--s3);color:var(--text-2);font-size:.95rem}
+.mode-switch{display:inline-flex;gap:4px;margin-top:var(--s5);padding:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px}
+.mode-btn{min-height:38px;padding:7px 16px;border:0;border-radius:999px;background:transparent;color:var(--text-3);font:600 .82rem var(--font-mono);cursor:pointer}
+.mode-btn:hover{color:var(--text)}
+.mode-btn.is-active{background:var(--gold);color:var(--gold-ink)}
+.approval-term{min-width:0}
+.approval-term .term-body{padding:var(--s5);white-space:normal}
+.approval-command{display:flex;gap:10px;align-items:center;color:var(--text)}
+.approval-output{display:flex;gap:12px;align-items:flex-start;margin-top:var(--s5);padding-top:var(--s4);border-top:1px solid var(--line);color:var(--text-2);font-size:.88rem}
+.approval-output strong{display:block;color:var(--text);font-family:var(--font-mono);font-size:.8rem;font-weight:500}
+.approval-output span:last-child{display:block;margin-top:4px}
+.approval-dot{width:9px;height:9px;margin-top:5px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px rgba(253,196,5,.10);flex:none}
+
+.install-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--s7);align-items:center}
+.install-term .term-body{font-size:.85rem}
+.install-side .note{margin-top:var(--s5);color:var(--text-3);font-size:.9rem;max-width:52ch}
+.install-side .prereq{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s4)}
+.prereq-chip{font-family:var(--font-mono);font-size:.78rem;color:var(--text-2);border:1px solid var(--line);padding:5px 10px;border-radius:999px}
+
+.site-footer{border-top:1px solid var(--line);padding:var(--s6) 0 var(--s8)}
+.site-footer .container{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s5)}
+.footer-brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:600}
+.footer-brand img{width:24px;height:24px}
+.site-footer .spacer{flex:1}
+.footer-links{display:flex;gap:var(--s5)}
+.footer-links a{color:var(--text-3);text-decoration:none;font-size:.9rem}
+.footer-links a:hover{color:var(--gold)}
+.copyright{color:var(--text-3);font-size:.85rem}
+
+[data-reveal]{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease;transition-delay:var(--d,0ms)}
+[data-reveal].in{opacity:1;transform:none}
+
+.hero-line{opacity:0;transform:translateY(16px);animation:rise .6s ease forwards}
+.hero-line:nth-child(1){animation-delay:.05s}
+.hero-line:nth-child(2){animation-delay:.18s}
+.hero-line:nth-child(3){animation-delay:.32s}
+.hero-fade{opacity:0;transform:translateY(16px);animation:rise .7s ease forwards;animation-delay:.55s}
+@keyframes rise{to{opacity:1;transform:none}}
+
+@media (max-width:940px){
+  .cards{grid-template-columns:repeat(2,1fr)}
+  .wf{grid-template-columns:1fr;gap:var(--s6)}
+  .wf-visual{position:static}
+  .wf-visual .chat{max-width:520px}
+}
+@media (max-width:760px){
+  .section{padding:var(--s7) 0}
+  .split,.install-grid{grid-template-columns:1fr;gap:var(--s5)}
+  .approval-demo{grid-template-columns:1fr;gap:var(--s5);padding:var(--s5)}
+  .nav{display:none}
+  .header-cta{margin-left:auto}
+  .hero{padding:var(--s7) 0 var(--s6)}
+  .hero-demo{grid-template-columns:1fr}
+  .hero-demo .chat,.hero-demo .code-panel{height:500px}
+  .wf-visual .chat{height:400px}
+  .term-body{font-size:.82rem;padding:var(--s4) var(--s4) var(--s5)}
+  .cards{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  [data-reveal]{opacity:1;transform:none}
+  .hero-line,.hero-fade{opacity:1;transform:none}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="#top" aria-label="Cheap Labor home">
+      <img src="assets/cheap-labor-icon-128px.png" alt="">
+      Cheap Labor
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="#why">Why</a>
+      <a href="#workflow">Workflow</a>
+      <a href="#safety">Safety</a>
+      <a href="#install">Install</a>
+    </nav>
+    <a class="btn btn-ghost header-cta" href="https://github.com/psrisuphan/cheap-labor" target="_blank" rel="noopener">
+      <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      GitHub
+    </a>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" id="top">
+    <div class="container">
+      <h1 class="hero-tagline">
+        <span class="line hero-line">ChatGPT thinks.</span>
+        <span class="line hero-line">Codex executes.</span>
+        <span class="line hero-line gold">They bill separately.</span>
+      </h1>
+      <p class="hero-sub hero-fade">So Cheap Labor splits the work: ChatGPT plans, edits, and reviews on its own allowance, while Codex spends its pool only on real implementation — over your local repo, from a single <code>@cheap-labor</code> trigger.</p>
+      <div class="hero-actions hero-fade">
+        <a class="btn btn-gold" href="https://github.com/psrisuphan/cheap-labor" target="_blank" rel="noopener">Install cheap-labor</a>
+        <a class="link-arrow" href="#workflow">How it works &darr;</a>
+        <a class="link-arrow" href="https://github.com/psrisuphan/cheap-labor" target="_blank" rel="noopener">View source on GitHub &rarr;</a>
+      </div>
+      <div class="hero-demo">
+        <div class="chat hero-fade" aria-hidden="true">
+        <div class="chat-bar">
+          <span class="chat-dot"></span>
+          <span class="chat-title">ChatGPT</span>
+          <span class="chat-sub">connected to cheap-labor</span>
+        </div>
+        <div class="chat-body" id="hero-chat-body"></div>
+        <div class="chat-input" id="hero-input-row">
+          <input class="input" id="hero-input" type="text" placeholder="Message ChatGPT" autocomplete="off" readonly aria-label="Message ChatGPT">
+          <span class="cursor"></span>
+          <button class="chat-send" id="hero-send" type="button" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+        </div>
+      </div>
+      <div class="code-panel hero-fade phase-desktop" id="hero-panel" aria-hidden="true">
+        <div class="code-head">
+          <span class="chat-dot"></span><span class="chat-dot"></span><span class="chat-dot"></span>
+          <span class="code-path" id="hero-path">Desktop</span>
+          <span class="code-status" id="hero-status">exploring</span>
+        </div>
+        <div class="panel-body">
+          <div class="explorer">
+            <div class="explorer-item explorer-folder" id="hero-folder">
+              <svg class="folder-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg>
+              personal-project
+            </div>
+            <div class="folder-children" id="hero-children">
+              <div class="explorer-item explorer-file" id="hero-file">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6V3Z"/><path d="M14 3v4h4"/></svg>
+                main.c
+              </div>
+            </div>
+          </div>
+          <div class="editor" id="hero-editor">
+            <div class="editor-tabs"><span class="editor-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6V3Z"/><path d="M14 3v4h4"/></svg>main.c</span></div>
+            <div class="editor-body">
+              <div class="cl"><span class="kw">#include</span> <span class="inc">&lt;stdio.h&gt;</span></div>
+              <div class="cl"></div>
+              <div class="cl"><span class="kw">int</span> <span class="fn">main</span>(<span class="kw">void</span>)</div>
+              <div class="cl">{</div>
+              <div class="cl">    <span class="fn">printf</span>(<span class="str">"Hello, World!\n"</span>);</div>
+              <div class="cl"></div>
+              <div class="cl">    <span class="kw">return</span> <span class="num">0</span>;</div>
+              <div class="cl">}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <section class="section" id="why">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <p class="section-label">Why</p>
+        <h2>Two allowances. One cheap laborer.</h2>
+        <p>Codex usage is a limited pool, and most of what an agent does is not writing code. Reading files, exploring the repo, planning, and reviewing diffs all burn the allowance — the pool empties before real work ships. ChatGPT and Codex bill separately, so Cheap Labor splits the job at the seam.</p>
+      </div>
+      <div class="split">
+        <div class="panel" data-reveal>
+          <p class="panel-tag">billed to ChatGPT's allowance</p>
+          <h3>ChatGPT — the thinker</h3>
+          <p>Reads your repo, plans in detail, and makes small edits itself. The free bridge tools handle the reading, planning, and one-file changes without ever touching the Codex pool.</p>
+          <div class="tool-list">
+            <span class="tool-chip"><span class="free">read_file</span></span>
+            <span class="tool-chip"><span class="free">grep</span></span>
+            <span class="tool-chip"><span class="free">plan_write</span></span>
+            <span class="tool-chip"><span class="free">edit_file</span></span>
+            <span class="tool-chip"><span class="free">git_diff</span></span>
+            <span class="tool-chip"><span class="free">checkpoint</span></span>
+          </div>
+        </div>
+        <div class="panel" data-reveal style="--d:90ms">
+          <p class="panel-tag">spent only on real implementation</p>
+          <h3>Codex — the executor</h3>
+          <p>Runs only when a plan is ready. Executes the steps literally, runs the build and tests, fixes what breaks, and hands back the diff for review.</p>
+          <div class="tool-list">
+            <span class="tool-chip"><span class="paid">deep_explore</span></span>
+            <span class="tool-chip"><span class="paid">implement</span></span>
+            <span class="tool-chip"><span class="paid">codex_reply</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="workflow">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <p class="section-label">Workflow</p>
+        <h2>The workflow</h2>
+        <p>One trigger arms the session. Every step after that is visible — you watch the transcript, and you approve the moves.</p>
+      </div>
+      <div class="wf">
+        <div class="wf-steps" id="wf-steps">
+          <article class="wf-step" data-reveal>
+            <div class="wf-step-head"><span class="wf-num">01</span><h3>Arm</h3></div>
+             <p>Type <code>@Cheap Labor</code> in any ChatGPT chat and confirm the project. That single invocation is the only trigger — the bridge stays dormant until it's invoked.</p>
+          </article>
+          <article class="wf-step" data-reveal>
+            <div class="wf-step-head"><span class="wf-num">02</span><h3>Understand</h3></div>
+            <p><code>git_status</code>, <code>list_tree</code>, <code>read_file</code>, and <code>grep</code> map the repo. All free — the Codex pool is untouched.</p>
+          </article>
+          <article class="wf-step" data-reveal>
+            <div class="wf-step-head"><span class="wf-num">03</span><h3>Plan</h3></div>
+            <p>ChatGPT writes exact step-by-step instructions into <code>.codex-bridge/</code>: which files to create or edit, what each change should be, which commands to run, and how to verify.</p>
+          </article>
+          <article class="wf-step" data-reveal>
+            <div class="wf-step-head"><span class="wf-num">04</span><h3>Small edits</h3></div>
+            <p>One-file changes go in directly with <code>write_file</code> and <code>edit_file</code>. Still free.</p>
+          </article>
+          <article class="wf-step" data-reveal>
+            <div class="wf-step-head"><span class="wf-num">05</span><h3>Implement</h3></div>
+            <p>When the plan is ready, <code>implement</code> hands it to Codex in a workspace-write sandbox. It works through the steps, runs the build and tests, and fixes what breaks.</p>
+          </article>
+          <article class="wf-step" data-reveal>
+            <div class="wf-step-head"><span class="wf-num">06</span><h3>Review</h3></div>
+            <p>ChatGPT reads the returned <code>git diff</code> and sends targeted corrections back through the same loop.</p>
+          </article>
+        </div>
+        <div class="wf-visual" aria-hidden="true">
+          <div class="chat">
+            <div class="chat-bar">
+              <span class="chat-dot"></span>
+              <span class="chat-title">ChatGPT</span>
+              <span class="chat-sub">connected to cheap-labor</span>
+            </div>
+            <div class="chat-body shots">
+               <div class="shot is-active">
+                  <div class="msg msg-user">@Cheap Labor</div>
+                  <div class="msg msg-gpt"><span class="msg-avatar"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2 7.2 2.4-7.2 2.4L12 21.4 9.6 14 2.4 11.6l7.2-2.4L12 2z"/></svg></span><div class="msg-bubble">Got it - using <img class="inline-logo" src="assets/cheap-labor-icon-128px.png" alt=""> Cheap Labor. Which project directory should I work on?</div></div>
+              </div>
+              <div class="shot">
+                 <div class="msg msg-user">~/Desktop/personal-project</div>
+                 <div class="msg msg-gpt"><span class="msg-avatar"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2 7.2 2.4-7.2 2.4L12 21.4 9.6 14 2.4 11.6l7.2-2.4L12 2z"/></svg></span><div class="msg-bubble"><span class="ok">&#10003;</span> Found it. Project confirmed and session armed for <code>~/Desktop/personal-project</code>.
+                   <div class="tool-row">
+                     <span class="tool-chip"><span class="free">find_projects</span></span>
+                     <span class="tool-chip"><span class="free">init</span></span>
+                  </div>
+                </div></div>
+              </div>
+              <div class="shot">
+                 <div class="msg msg-user">Add a health-check endpoint and tests.</div>
+                 <div class="msg msg-gpt"><span class="msg-avatar"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2 7.2 2.4-7.2 2.4L12 21.4 9.6 14 2.4 11.6l7.2-2.4L12 2z"/></svg></span><div class="msg-bubble">I found the server entrypoint and test setup. I will map the change, then write the implementation plan.
+                   <div class="tool-row">
+                     <span class="tool-chip"><span class="free">git_status</span></span>
+                     <span class="tool-chip"><span class="free">list_tree</span></span>
+                     <span class="tool-chip"><span class="free">read_file</span></span>
+                     <span class="tool-chip"><span class="free">grep</span></span>
+                   </div>
+                   <span class="ok">&#10003; PLAN.md written to .codex-bridge/</span>
+                </div></div>
+              </div>
+              <div class="shot">
+                 <div class="msg msg-gpt"><span class="msg-avatar"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2 7.2 2.4-7.2 2.4L12 21.4 9.6 14 2.4 11.6l7.2-2.4L12 2z"/></svg></span><div class="msg-bubble">The test script change is one file, so I can apply it directly without spending the Codex pool.
+                   <div class="tool-row">
+                     <span class="tool-chip"><span class="free">write_file</span></span>
+                     <span class="tool-chip"><span class="free">edit_file</span></span>
+                   </div>
+                   <span class="ok">&#10003; 1 file updated</span>
+                </div></div>
+              </div>
+              <div class="shot">
+                 <div class="msg msg-gpt"><span class="msg-avatar"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2 7.2 2.4-7.2 2.4L12 21.4 9.6 14 2.4 11.6l7.2-2.4L12 2z"/></svg></span><div class="msg-bubble">The plan is ready. Handing the multi-file implementation to Codex in a workspace-write sandbox.
+                  <div class="tool-row">
+                    <span class="tool-chip"><span class="paid">implement</span></span>
+                  </div>
+                   <span class="ok">&#10003; Build + tests pass - 3 files changed</span>
+                </div></div>
+              </div>
+              <div class="shot">
+                 <div class="msg msg-gpt"><span class="msg-avatar"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2 7.2 2.4-7.2 2.4L12 21.4 9.6 14 2.4 11.6l7.2-2.4L12 2z"/></svg></span><div class="msg-bubble">Codex returned the diff. I am reviewing the changes and will send any targeted correction back through the same loop.
+                  <div class="tool-row">
+                     <span class="tool-chip"><span class="free">git_diff</span></span>
+                     <span class="tool-chip"><span class="paid">implement</span></span>
+                   </div>
+                   <span class="ok">&#10003; Review complete - ready for your approval</span>
+                </div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="safety">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <p class="section-label">Safety</p>
+        <h2>Safety by default</h2>
+        <p>An agent with write access to your machine earns its guardrails, not your trust.</p>
+      </div>
+      <div class="cards">
+        <div class="card" data-reveal>
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></div>
+          <h3>Three-bucket commands</h3>
+          <p>Provably safe reads run freely. File deletes, git rewrites, and network installs always ask. Everything else follows the approval mode.</p>
+        </div>
+        <div class="card" data-reveal style="--d:70ms">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h10M18 8h2M4 16h2M10 16h10"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/></svg></div>
+          <h3>Approval modes</h3>
+          <p><code>normal</code> asks before every command. <code>auto</code> lets ChatGPT judge safe commands itself — dangerous ones still come back to you.</p>
+        </div>
+        <div class="card" data-reveal style="--d:140ms">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m11 12 8-8M15.5 6.5l2 2M18 5l-1 1"/></svg></div>
+          <h3>Project scoping</h3>
+          <p>Tools refuse paths outside the session-approved project. Git-backed tools require the project to be the repository root.</p>
+        </div>
+        <div class="card" data-reveal style="--d:0ms">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6"/><path d="M9 15l6-6"/></svg></div>
+          <h3>Secrets redacted</h3>
+          <p>File reads, greps, diffs, and command output redact known secret patterns by default.</p>
+        </div>
+        <div class="card" data-reveal style="--d:70ms">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v4"/></svg></div>
+          <h3>Checkpoints &amp; rollback</h3>
+          <p>HEAD and the working tree are snapshotted before every heavy run. Rollback restores a checkpoint, and is itself undoable.</p>
+        </div>
+        <div class="card" data-reveal style="--d:140ms">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M6 8v8a4 4 0 0 0 4 4h8"/></svg></div>
+          <h3>Local-only commits</h3>
+          <p>Commits stay local and never push. Push, pull, reset, rebase, and checkout are never exposed.</p>
+        </div>
+      </div>
+      <div class="approval-demo" data-reveal style="--d:90ms">
+        <div class="approval-copy">
+          <p class="panel-tag">Interactive guardrail</p>
+          <h3>See the approval gate in action.</h3>
+          <p>Switch modes to see how the same command is handled before it touches your project.</p>
+          <div class="mode-switch" role="group" aria-label="Approval mode">
+            <button class="mode-btn is-active" type="button" data-approval-mode="normal" aria-pressed="true">normal</button>
+            <button class="mode-btn" type="button" data-approval-mode="auto" aria-pressed="false">auto</button>
+          </div>
+        </div>
+        <div class="term approval-term">
+          <div class="term-bar">
+            <span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span>
+            <span class="term-title">run_command · approval gate</span>
+          </div>
+          <div class="term-body">
+            <div class="approval-command"><span class="prompt">$</span> npm test</div>
+            <div class="approval-output" id="approval-output" aria-live="polite">
+              <span class="approval-dot"></span>
+              <div><strong id="approval-mode-label">normal mode</strong><span id="approval-mode-copy">Approval required before this command runs.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="install">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <p class="section-label">Install</p>
+        <h2>Two commands, then it's wired</h2>
+        <p>macOS and Linux, no public ports — the Secure MCP Tunnel is outbound-only, so nothing on your machine is exposed.</p>
+      </div>
+      <div class="install-grid">
+        <div class="term install-term" data-reveal>
+          <div class="term-bar">
+            <span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span>
+            <span class="term-title">~/your-repo · zsh</span>
+          </div>
+          <div class="term-body"><span class="prompt">$</span> git clone https://github.com/psrisuphan/cheap-labor.git
+<span class="prompt">$</span> cd cheap-labor
+<span class="prompt">$</span> ./scripts/install.sh      <span class="dim"># deps · build · tunnel profile · 25 tools validated</span>
+<span class="prompt">$</span> ./scripts/tunnel.sh start <span class="dim"># keep it running while you work</span></div>
+        </div>
+        <div class="install-side" data-reveal style="--d:90ms">
+          <p>Then open ChatGPT, type <code>@cheap-labor</code>, and confirm the project you want to work on. Approvals default to <code>normal</code> — switch to <code>auto</code> in chat any time.</p>
+          <div class="prereq">
+            <span class="prereq-chip">macOS · Linux</span>
+            <span class="prereq-chip">Node.js ≥ 20</span>
+            <span class="prereq-chip">Codex CLI</span>
+            <span class="prereq-chip">ChatGPT · dev mode</span>
+          </div>
+          <div class="note">The installer checks every prerequisite, writes your tunnel profile, and walks you through connecting the app to ChatGPT — it points you at the exact platform pages.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span class="footer-brand"><img src="assets/cheap-labor-icon-128px.png" alt="">Cheap Labor</span>
+    <span class="spacer"></span>
+    <div class="footer-links">
+      <a href="https://github.com/psrisuphan/cheap-labor" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/psrisuphan/cheap-labor/blob/master/LICENSE" target="_blank" rel="noopener">MIT License</a>
+    </div>
+    <span class="copyright">&copy; 2026 psrisuphan</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reduce) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('[data-reveal]').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('[data-reveal]').forEach(function(el){ el.classList.add('in'); });
+  }
+
+  var heroBody = document.getElementById('hero-chat-body');
+  var heroPanel = document.getElementById('hero-panel');
+  var heroPath = document.getElementById('hero-path');
+  var heroStatus = document.getElementById('hero-status');
+  var heroFile = document.getElementById('hero-file');
+
+  function setPhase(p){
+    if (!heroPanel) return;
+    var phases = ['phase-desktop', 'phase-empty', 'phase-files', 'phase-open'];
+    phases.forEach(function(c){ heroPanel.classList.remove(c); });
+    heroPanel.classList.add('phase-' + p);
+    var meta = {
+      desktop: ['Desktop', 'exploring'],
+      empty: ['~/Desktop/personal-project', 'ready'],
+      files: ['~/Desktop/personal-project', '1 file'],
+      open: ['~/Desktop/personal-project/main.c', 'main.c']
+    };
+    var m = meta[p];
+    if (m) { heroPath.textContent = m[0]; heroStatus.textContent = m[1]; }
+  }
+
+  if (heroBody) {
+    var heroScript = [
+      { who: 'user', text: '@Cheap Labor' },
+      { who: 'gpt', text: 'Got it — using <img class="inline-logo" src="assets/cheap-labor-icon-128px.png" alt="Cheap Labor"> Cheap Labor. Which project directory should I work on?' },
+      { who: 'user', text: 'on my Desktop/personal-project' },
+      { who: 'gpt', text: '&#10003; Found it — Cheap Labor is armed and scoped to ~/Desktop/personal-project. What would you like to do?' },
+      { who: 'user', text: 'write a hello world program in C for me.' },
+      { who: 'gpt', think: true, then: '&#10003; Done — main.c with a hello world program is ready in ~/Desktop/personal-project.' }
+    ];
+
+    function avatar(){
+      var m = document.createElement('span');
+      m.className = 'msg-avatar';
+      m.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2 7.2 2.4-7.2 2.4L12 21.4 9.6 14 2.4 11.6l7.2-2.4L12 2z"/></svg>';
+      return m;
+    }
+    function userMsg(){
+      var m = document.createElement('div');
+      m.className = 'msg msg-user msg-in';
+      heroBody.appendChild(m);
+      evictOld();
+      return m;
+    }
+    function gptMsg(){
+      var m = document.createElement('div');
+      m.className = 'msg msg-gpt msg-in';
+      var b = document.createElement('div');
+      b.className = 'msg-bubble';
+      m.appendChild(avatar());
+      m.appendChild(b);
+      heroBody.appendChild(m);
+      evictOld();
+      return b;
+    }
+    function typeInput(text, done){
+      var el = document.getElementById('hero-input');
+      if (!el) return done();
+      var i = 0;
+      el.value = '';
+      (function tick(){
+        el.value = text.slice(0, ++i);
+        if (i < text.length) setTimeout(tick, 48); else done();
+      })();
+    }
+    function sendUser(text, cb){
+      var el = document.getElementById('hero-input');
+      if (el){ el.value = ''; }
+      var send = document.getElementById('hero-send');
+      if (send){ send.classList.remove('sending'); void send.offsetWidth; send.classList.add('sending'); }
+      var u = userMsg();
+      u.textContent = text;
+      setTimeout(cb, 260);
+    }
+    function wait(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+    function evictOld(){
+      var msgs = heroBody.children;
+      if (msgs.length > 2){
+        var first = msgs[0];
+        first.classList.add('msg-leave');
+        setTimeout(function(){ first.remove(); }, 330);
+      }
+    }
+    var heroInput = document.getElementById('hero-input');
+    var heroSend = document.getElementById('hero-send');
+    var eggCount = 0;
+    function enableInput(){
+      if (!heroInput) return;
+      heroInput.readOnly = false;
+      var row = document.getElementById('hero-input-row');
+      if (row) row.classList.add('done');
+      heroInput.focus();
+    }
+    function sendEasterEgg(){
+      if (!heroInput || heroInput.readOnly) return;
+      var text = heroInput.value.trim();
+      if (!text) return;
+      heroInput.value = '';
+      var send = document.getElementById('hero-send');
+      if (send){ send.classList.remove('sending'); void send.offsetWidth; send.classList.add('sending'); }
+      var u = userMsg();
+      u.textContent = text;
+      eggCount++;
+      var cta = eggCount >= 4;
+      var b = gptMsg();
+      b.innerHTML = '<span class="thinking"><i></i><i></i><i></i></span>';
+      setTimeout(function(){
+        b.innerHTML = cta ? 'You might have fun, huh?' : 'Peek-a-boo!';
+        if (cta) setTimeout(showGitHubCta, 1400);
+      }, 1100);
+    }
+    function showGitHubCta(){
+      var row = document.getElementById('hero-input-row');
+      if (!row) return;
+      var a = document.createElement('a');
+      a.className = 'chat-cta';
+      a.href = 'https://github.com/psrisuphan/cheap-labor';
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>Get it on GitHub';
+      row.replaceWith(a);
+    }
+    if (heroInput){
+      heroInput.addEventListener('keydown', function(e){
+        if (e.key === 'Enter'){ e.preventDefault(); sendEasterEgg(); }
+      });
+    }
+    if (heroSend) heroSend.addEventListener('click', sendEasterEgg);
+
+    (function run(){
+      if (reduce) {
+        heroScript.forEach(function(s){
+          if (s.who === 'user') userMsg().textContent = s.text;
+          else {
+            var b = gptMsg();
+            b.innerHTML = s.then || s.text;
+          }
+        });
+        setPhase('open');
+        enableInput();
+        return;
+      }
+      wait(1600).then(function(){
+        var i = 0;
+        (function next(){
+          if (i >= heroScript.length){ enableInput(); return; }
+          var s = heroScript[i++];
+          if (s.who === 'user'){
+            typeInput(s.text, function(){
+              wait(800).then(function(){
+                sendUser(s.text, function(){
+                  if (s.text.indexOf('personal-project') !== -1) setPhase('empty');
+                  wait(1000).then(next);
+                });
+              });
+            });
+          } else if (s.think){
+            var tb = gptMsg();
+            tb.innerHTML = '<span class="thinking"><i></i><i></i><i></i></span>';
+            wait(4200).then(function(){
+              tb.innerHTML = s.then;
+              wait(1000).then(function(){
+                setPhase('files');
+                wait(1200).then(function(){
+                  if (heroFile) heroFile.classList.add('clicking');
+                  wait(1000).then(function(){
+                    if (heroFile) heroFile.classList.remove('clicking');
+                    setPhase('open');
+                    wait(500).then(next);
+                  });
+                });
+              });
+            });
+          } else {
+            var b = gptMsg();
+            b.innerHTML = '<span class="thinking"><i></i><i></i><i></i></span>';
+            wait(1300).then(function(){
+              b.innerHTML = s.text;
+              wait(1500).then(next);
+            });
+          }
+        })();
+      });
+    })();
+  }
+
+  var approvalButtons = Array.prototype.slice.call(document.querySelectorAll('[data-approval-mode]'));
+  var approvalOutput = document.getElementById('approval-output');
+  var approvalLabel = document.getElementById('approval-mode-label');
+  var approvalCopy = document.getElementById('approval-mode-copy');
+  var approvalMessages = {
+    normal: 'Approval required before this command runs.',
+    auto: 'ChatGPT can judge this safe command and run it.'
+  };
+  approvalButtons.forEach(function(button){
+    button.addEventListener('click', function(){
+      var mode = button.getAttribute('data-approval-mode');
+      approvalButtons.forEach(function(other){
+        var active = other === button;
+        other.classList.toggle('is-active', active);
+        other.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      if (approvalOutput) approvalOutput.dataset.mode = mode;
+      if (approvalLabel) approvalLabel.textContent = mode + ' mode';
+      if (approvalCopy) approvalCopy.textContent = approvalMessages[mode];
+    });
+  });
+
+  var steps = Array.prototype.slice.call(document.querySelectorAll('.wf-step'));
+  var shots = Array.prototype.slice.call(document.querySelectorAll('.shot'));
+  var wfSection = document.getElementById('workflow');
+  var activeIndex = -1;
+  var syncFrame = 0;
+
+  function activate(step){
+    var i = steps.indexOf(step);
+    if (i === -1) return;
+    if (i === activeIndex) return;
+    activeIndex = i;
+    steps.forEach(function(s){ s.classList.remove('is-active'); });
+    shots.forEach(function(sh, j){ sh.classList.toggle('is-active', j === i); });
+    step.classList.add('is-active');
+  }
+
+  function syncWorkflow(){
+    syncFrame = 0;
+    if (!wfSection || !steps.length || !shots.length) return;
+    var sectionRect = wfSection.getBoundingClientRect();
+    if (sectionRect.bottom <= 0 || sectionRect.top >= window.innerHeight) return;
+    var readingLine = window.innerHeight * .42;
+    var nearest = 0;
+    var nearestDistance = Infinity;
+    steps.forEach(function(step, i){
+      var rect = step.getBoundingClientRect();
+      var distance = Math.abs(rect.top + rect.height / 2 - readingLine);
+      if (distance < nearestDistance) {
+        nearest = i;
+        nearestDistance = distance;
+      }
+    });
+    activate(steps[nearest]);
+  }
+
+  function queueWorkflowSync(){
+    if (!syncFrame) syncFrame = window.requestAnimationFrame(syncWorkflow);
+  }
+
+  if (steps.length && shots.length) {
+    activate(steps[0]);
+    if (!reduce) {
+      window.addEventListener('scroll', queueWorkflowSync, {passive:true});
+      window.addEventListener('resize', queueWorkflowSync);
+      queueWorkflowSync();
+    }
+  }
+})();
+</script>
+</body>
+</html>
